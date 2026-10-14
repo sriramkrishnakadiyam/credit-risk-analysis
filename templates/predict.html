@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}Predict Credit Risk{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2">
+                <i class="bi bi-calculator me-1"></i> Prediction Engine
+            </span>
+            <h1 class="fw-bold">Credit Risk Prediction</h1>
+            <p class="text-secondary col-lg-8 mx-auto">
+                Enter the applicant's details below. All fields are required.
+                The model will classify the applicant into Low, Medium, or High risk.
+            </p>
+        </div>
+
+        <!-- Prediction Form -->
+        <form method="POST" action="{{ url_for('predict') }}" id="predictionForm" novalidate>
+            <div class="row g-4">
+
+                <!-- ── Loan Details ─────────────────────────────── -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-cash-coin text-info me-2"></i>Loan Details
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="duration_months" class="form-label">Loan Duration (months)</label>
+                            <input type="number" class="form-control glass-input" id="duration_months"
+                                   name="duration_months" min="1" max="120" required placeholder="e.g. 24">
+                            <div class="invalid-feedback">Enter a duration between 1 and 120 months.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="credit_amount" class="form-label">Credit Amount (DM)</label>
+                            <input type="number" class="form-control glass-input" id="credit_amount"
+                                   name="credit_amount" min="1" required placeholder="e.g. 5000">
+                            <div class="invalid-feedback">Enter a positive credit amount.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="installment_rate" class="form-label">Installment Rate (% of income)</label>
+                            <select class="form-select glass-input" id="installment_rate" name="installment_rate" required>
+                                <option value="" disabled selected>Select rate</option>
+                                <option value="1">1 — Low</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4 — High</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="purpose" class="form-label">Purpose of Loan</label>
+                            <select class="form-select glass-input" id="purpose" name="purpose" required>
+                                <option value="" disabled selected>Select purpose</option>
+                                {% for val, label in form_options.purpose %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="num_existing_credits" class="form-label">Number of Existing Credits</label>
+                            <select class="form-select glass-input" id="num_existing_credits" name="num_existing_credits" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Financial Background ─────────────────────── -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-bank text-warning me-2"></i>Financial Background
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="status_checking_account" class="form-label">Checking Account Status</label>
+                            <select class="form-select glass-input" id="status_checking_account" name="status_checking_account" required>
+                                <option value="" disabled selected>Select status</option>
+                                {% for val, label in form_options.status_checking_account %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="credit_history" class="form-label">Credit History</label>
+                            <select class="form-select glass-input" id="credit_history" name="credit_history" required>
+                                <option value="" disabled selected>Select history</option>
+                                {% for val, label in form_options.credit_history %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="savings_account" class="form-label">Savings Account</label>
+                            <select class="form-select glass-input" id="savings_account" name="savings_account" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.savings_account %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="other_installment_plans" class="form-label">Other Installment Plans</label>
+                            <select class="form-select glass-input" id="other_installment_plans" name="other_installment_plans" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.other_installment_plans %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="other_debtors" class="form-label">Other Debtors / Guarantors</label>
+                            <select class="form-select glass-input" id="other_debtors" name="other_debtors" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.other_debtors %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Personal Information ─────────────────────── -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-person text-success me-2"></i>Personal Information
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="number" class="form-control glass-input" id="age"
+                                   name="age" min="18" max="120" required placeholder="e.g. 35">
+                            <div class="invalid-feedback">Age must be between 18 and 120.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="personal_status_sex" class="form-label">Personal Status &amp; Sex</label>
+                            <select class="form-select glass-input" id="personal_status_sex" name="personal_status_sex" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.personal_status_sex %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="num_dependents" class="form-label">Number of Dependents</label>
+                            <select class="form-select glass-input" id="num_dependents" name="num_dependents" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telephone" class="form-label">Telephone</label>
+                            <select class="form-select glass-input" id="telephone" name="telephone" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.telephone %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="foreign_worker" class="form-label">Foreign Worker</label>
+                            <select class="form-select glass-input" id="foreign_worker" name="foreign_worker" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.foreign_worker %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Employment & Property ────────────────────── -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-briefcase text-danger me-2"></i>Employment &amp; Property
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="employment_since" class="form-label">Employment Duration</label>
+                            <select class="form-select glass-input" id="employment_since" name="employment_since" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.employment_since %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job" class="form-label">Job Type</label>
+                            <select class="form-select glass-input" id="job" name="job" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.job %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="property" class="form-label">Property</label>
+                            <select class="form-select glass-input" id="property" name="property" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.property %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="housing" class="form-label">Housing</label>
+                            <select class="form-select glass-input" id="housing" name="housing" required>
+                                <option value="" disabled selected>Select</option>
+                                {% for val, label in form_options.housing %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="residence_since" class="form-label">Residence Since (years)</label>
+                            <select class="form-select glass-input" id="residence_since" name="residence_since" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Submit -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-glow btn-lg px-5" id="submitBtn">
+                    <i class="bi bi-lightning-charge me-2"></i>Classify Risk
+                </button>
+                <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Prediction Result{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2">
+                <i class="bi bi-check2-circle me-1"></i> Analysis Complete
+            </span>
+            <h1 class="fw-bold">Prediction Result</h1>
+        </div>
+
+        <div class="row justify-content-center g-4">
+            <!-- ── Risk Category Card ───────────────────────── -->
+            <div class="col-lg-6">
+                <div class="glass-card p-5 text-center result-card animate-scale-in">
+                    {% if result.risk_category == 'Low Risk' %}
+                        {% set color = 'success' %}
+                        {% set icon = 'bi-shield-check' %}
+                        {% set emoji = '✅' %}
+                    {% elif result.risk_category == 'Medium Risk' %}
+                        {% set color = 'warning' %}
+                        {% set icon = 'bi-exclamation-triangle' %}
+                        {% set emoji = '⚠️' %}
+                    {% else %}
+                        {% set color = 'danger' %}
+                        {% set icon = 'bi-shield-x' %}
+                        {% set emoji = '🚨' %}
+                    {% endif %}
+
+                    <div class="result-emoji mb-3">{{ emoji }}</div>
+                    <h2 class="fw-800 text-{{ color }} mb-2">{{ result.risk_category }}</h2>
+                    <p class="text-secondary mb-4">{{ result.binary_prediction }}</p>
+
+                    <!-- Probability Bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-success fw-semibold">Good Credit</span>
+                            <span class="fw-bold">{{ (result.probability_good * 100) | round(1) }}%</span>
+                        </div>
+                        <div class="progress glass-progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: {{ (result.probability_good * 100) | round(1) }}%"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-danger fw-semibold">Bad Credit</span>
+                            <span class="fw-bold">{{ (result.probability_bad * 100) | round(1) }}%</span>
+                        </div>
+                        <div class="progress glass-progress">
+                            <div class="progress-bar bg-danger" role="progressbar"
+                                 style="width: {{ (result.probability_bad * 100) | round(1) }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Meter -->
+                    <div class="risk-gauge mt-4">
+                        <div class="risk-gauge-track">
+                            <div class="risk-gauge-fill" style="width: {{ (result.probability_bad * 100) | round(1) }}%"></div>
+                            <div class="risk-gauge-marker" style="left: {{ (result.probability_bad * 100) | round(1) }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-success">Low Risk (0-30%)</small>
+                            <small class="text-warning">Medium (30-60%)</small>
+                            <small class="text-danger">High (&gt;60%)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Input Summary Card ───────────────────────── -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-list-check text-info me-2"></i>Input Summary
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody>
+                                {% for key, value in input_data.items() %}
+                                <tr>
+                                    <td class="text-secondary text-capitalize" style="width:55%">
+                                        {{ key.replace('_', ' ') }}
+                                    </td>
+                                    <td class="fw-semibold">
+                                        {% if key in form_options %}
+                                            {% for val, label in form_options[key] %}
+                                                {% if val == value %}{{ label }}{% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {{ value }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Decision Advisory & Disclaimer ──────────────────────── -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-12">
+                <div class="glass-card p-4 border-warning">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-info-circle-fill text-warning fs-3 me-3 mt-1"></i>
+                        <div>
+                            <h5 class="fw-bold mb-2 text-warning">Advisory &amp; Lending Recommendation</h5>
+                            <p class="text-secondary mb-2">
+                                <strong>Important Notice:</strong> This prediction is an algorithmic estimate generated by a machine learning model (Logistic Regression) based on historical statistical patterns and is <strong>not a guaranteed credit decision</strong>.
+                            </p>
+                            <p class="text-secondary mb-0">
+                                <strong>Recommendation:</strong> Human review required. A qualified loan officer or credit committee must review the applicant's full documentation, official credit bureau reports, debt-to-income ratios, and existing obligations before finalizing any real lending decision.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('predict') }}" class="btn btn-glow btn-lg px-4">
+                <i class="bi bi-arrow-repeat me-2"></i>New Prediction
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg px-4 ms-3">
+                <i class="bi bi-graph-up me-2"></i>View Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

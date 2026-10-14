@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Model Dashboard{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2">
+                <i class="bi bi-graph-up me-1"></i> Performance Analytics
+            </span>
+            <h1 class="fw-bold">Model Dashboard</h1>
+            <p class="text-secondary col-lg-8 mx-auto">
+                Evaluation results from the Logistic Regression model trained on the German Credit dataset.
+            </p>
+        </div>
+
+        {% if metrics %}
+        <!-- ── Metric Cards ────────────────────────────────── -->
+        <div class="row g-4 mb-5">
+            <div class="col-6 col-lg-3">
+                <div class="glass-card metric-card p-4 text-center">
+                    <div class="metric-icon text-info">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <div class="metric-value text-gradient">{{ (metrics.accuracy * 100) | round(1) }}%</div>
+                    <div class="metric-label text-secondary">Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card metric-card p-4 text-center">
+                    <div class="metric-icon text-warning">
+                        <i class="bi bi-crosshair"></i>
+                    </div>
+                    <div class="metric-value text-gradient">{{ (metrics.precision * 100) | round(1) }}%</div>
+                    <div class="metric-label text-secondary">Precision</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card metric-card p-4 text-center">
+                    <div class="metric-icon text-success">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div class="metric-value text-gradient">{{ (metrics.recall * 100) | round(1) }}%</div>
+                    <div class="metric-label text-secondary">Recall</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card metric-card p-4 text-center">
+                    <div class="metric-icon text-danger">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <div class="metric-value text-gradient">{{ (metrics.roc_auc * 100) | round(1) }}%</div>
+                    <div class="metric-label text-secondary">ROC AUC</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Detail Row ──────────────────────────────────── -->
+        <div class="row g-4 mb-5">
+            <!-- Confusion Matrix -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-grid-3x3 text-info me-2"></i>Confusion Matrix
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center confusion-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th class="text-success">Predicted Good</th>
+                                    <th class="text-danger">Predicted Bad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th class="text-success">Actual Good</th>
+                                    <td class="cm-tn">{{ metrics.confusion_matrix[0][0] }}</td>
+                                    <td class="cm-fp">{{ metrics.confusion_matrix[0][1] }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-danger">Actual Bad</th>
+                                    <td class="cm-fn">{{ metrics.confusion_matrix[1][0] }}</td>
+                                    <td class="cm-tp">{{ metrics.confusion_matrix[1][1] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row g-2 mt-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="cm-legend cm-tn-bg me-2"></span>
+                                <small class="text-secondary">True Negative</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="cm-legend cm-tp-bg me-2"></span>
+                                <small class="text-secondary">True Positive</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="cm-legend cm-fp-bg me-2"></span>
+                                <small class="text-secondary">False Positive</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="cm-legend cm-fn-bg me-2"></span>
+                                <small class="text-secondary">False Negative</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classification Report -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-file-earmark-bar-graph text-warning me-2"></i>Classification Report
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm report-table">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Support</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cls in ['Good Credit', 'Bad Credit'] %}
+                                <tr>
+                                    <td class="fw-semibold">{{ cls }}</td>
+                                    <td>{{ (metrics.classification_report[cls]['precision'] * 100) | round(1) }}%</td>
+                                    <td>{{ (metrics.classification_report[cls]['recall'] * 100) | round(1) }}%</td>
+                                    <td>{{ (metrics.classification_report[cls]['f1-score'] * 100) | round(1) }}%</td>
+                                    <td>{{ metrics.classification_report[cls]['support'] | int }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Visual bars -->
+                    <div class="mt-4">
+                        <h6 class="fw-semibold mb-3">F1-Score Comparison</h6>
+                        {% for cls in ['Good Credit', 'Bad Credit'] %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>{{ cls }}</small>
+                                <small class="fw-bold">{{ (metrics.classification_report[cls]['f1-score'] * 100) | round(1) }}%</small>
+                            </div>
+                            <div class="progress glass-progress">
+                                <div class="progress-bar {% if cls == 'Good Credit' %}bg-success{% else %}bg-danger{% endif %}"
+                                     style="width: {{ (metrics.classification_report[cls]['f1-score'] * 100) | round(1) }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Dataset Info ────────────────────────────────── -->
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="glass-card p-4 text-center">
+                    <i class="bi bi-database text-info display-5 mb-3"></i>
+                    <h5 class="fw-bold">Training Set</h5>
+                    <div class="stat-number text-gradient">{{ metrics.train_size }}</div>
+                    <small class="text-secondary">samples</small>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-4 text-center">
+                    <i class="bi bi-clipboard-data text-warning display-5 mb-3"></i>
+                    <h5 class="fw-bold">Test Set</h5>
+                    <div class="stat-number text-gradient">{{ metrics.test_size }}</div>
+                    <small class="text-secondary">samples</small>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-4 text-center">
+                    <i class="bi bi-bar-chart text-success display-5 mb-3"></i>
+                    <h5 class="fw-bold">F1 Score</h5>
+                    <div class="stat-number text-gradient">{{ (metrics.f1_score * 100) | round(1) }}%</div>
+                    <small class="text-secondary">weighted harmonic mean</small>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- ── No Metrics ──────────────────────────────────── -->
+        <div class="text-center py-5">
+            <div class="glass-card p-5 col-lg-8 mx-auto">
+                <i class="bi bi-exclamation-circle display-1 text-warning mb-3"></i>
+                <h3 class="fw-bold">Model Not Trained Yet</h3>
+                <p class="text-secondary mb-4">
+                    Run <code>python train_model.py</code> to train the model and generate evaluation metrics.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

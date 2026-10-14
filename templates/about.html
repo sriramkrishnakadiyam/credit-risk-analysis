@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}About — Credit Risk Classification{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2">
+                <i class="bi bi-info-circle me-1"></i> Project Information
+            </span>
+            <h1 class="fw-bold">About This Project</h1>
+        </div>
+
+        <div class="row g-4">
+            <!-- ── Overview ────────────────────────────────── -->
+            <div class="col-lg-8">
+                <div class="glass-card p-4 mb-4">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-lightbulb text-warning me-2"></i>Project Overview</h4>
+                    <p>
+                        This project implements a <strong>Credit Risk Classification</strong> system using
+                        <strong>Logistic Regression</strong>. Given a loan applicant's financial and personal
+                        attributes, the model predicts whether the applicant is a <em>good</em> or <em>bad</em>
+                        credit risk, and further categorises them into <span class="text-success fw-semibold">Low</span>,
+                        <span class="text-warning fw-semibold">Medium</span>, or
+                        <span class="text-danger fw-semibold">High</span> risk based on the predicted probability.
+                    </p>
+                </div>
+
+                <div class="glass-card p-4 mb-4">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-database text-info me-2"></i>Dataset</h4>
+                    <p>
+                        <strong>Name:</strong> Statlog (German Credit Data)<br>
+                        <strong>Source:</strong>
+                        <a href="https://archive.ics.uci.edu/ml/datasets/Statlog+(German+Credit+Data)"
+                           target="_blank" class="text-info text-decoration-none">
+                            UCI Machine Learning Repository
+                        </a><br>
+                        <strong>License:</strong> CC BY 4.0 (Creative Commons Attribution 4.0)<br>
+                        <strong>Samples:</strong> 1,000<br>
+                        <strong>Features:</strong> 20 (7 numerical, 13 categorical)<br>
+                        <strong>Target:</strong> Binary — 1 (Good Credit), 2 (Bad Credit)
+                    </p>
+                    <p class="text-secondary mb-0">
+                        The dataset was donated by Prof. Dr. Hans Hofmann, Institut für Statistik und Ökonometrie,
+                        Universität Hamburg. It classifies people as good or bad credit risks based on a set of attributes.
+                    </p>
+                </div>
+
+                <div class="glass-card p-4 mb-4">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-gear text-success me-2"></i>Methodology</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Data Cleaning:</strong> Duplicate removal, missing-value imputation
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Encoding:</strong> One-Hot Encoding for categorical features
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Scaling:</strong> Standard Scaler for numerical features
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Split:</strong> 80/20 stratified train-test split
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Model:</strong> Logistic Regression with balanced class weights
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Risk Categories:</strong> Derived from P(Bad Credit) thresholds (≤30% Low, 30-60% Medium, &gt;60% High)
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>No Data Leakage:</strong> Preprocessor fit on training data only
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-4">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Limitations &amp; Future Work</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold text-warning">Limitations</h6>
+                            <ul class="text-secondary">
+                                <li>Small dataset (1,000 rows)</li>
+                                <li>German-specific financial context</li>
+                                <li>Binary model extended to 3 classes via thresholds</li>
+                                <li>No feature importance explainability UI</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold text-info">Future Enhancements</h6>
+                            <ul class="text-secondary">
+                                <li>Add SHAP / LIME explanations</li>
+                                <li>Support additional ML algorithms</li>
+                                <li>API endpoints for integration</li>
+                                <li>User authentication &amp; history</li>
+                                <li>Batch prediction upload</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Sidebar ─────────────────────────────────── -->
+            <div class="col-lg-4">
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-stack text-info me-2"></i>Tech Stack</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-primary bg-opacity-25 text-primary px-3 py-2">Python</span>
+                        <span class="badge bg-success bg-opacity-25 text-success px-3 py-2">Flask</span>
+                        <span class="badge bg-warning bg-opacity-25 text-warning px-3 py-2">Scikit-learn</span>
+                        <span class="badge bg-info bg-opacity-25 text-info px-3 py-2">Pandas</span>
+                        <span class="badge bg-danger bg-opacity-25 text-danger px-3 py-2">NumPy</span>
+                        <span class="badge bg-secondary bg-opacity-25 text-secondary px-3 py-2">Joblib</span>
+                        <span class="badge bg-primary bg-opacity-25 text-primary px-3 py-2">Bootstrap 5</span>
+                        <span class="badge bg-success bg-opacity-25 text-success px-3 py-2">HTML/CSS/JS</span>
+                        <span class="badge bg-warning bg-opacity-25 text-warning px-3 py-2">Matplotlib</span>
+                        <span class="badge bg-info bg-opacity-25 text-info px-3 py-2">Seaborn</span>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-folder2-open text-warning me-2"></i>Project Structure</h5>
+                    <pre class="text-secondary small mb-0" style="font-size: 0.75rem;">
+Credit-Risk-Classification/
+├── app.py
+├── train_model.py
+├── requirements.txt
+├── README.md
+├── data/
+│   └── german_credit.csv
+├── models/
+│   ├── logistic_regression_model.joblib
+│   ├── preprocessor.joblib
+│   └── metrics.joblib
+├── src/
+│   ├── config.py
+│   ├── preprocessing.py
+│   └── model_utils.py
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── predict.html
+│   ├── result.html
+│   ├── dashboard.html
+│   └── about.html
+├── static/
+│   ├── css/style.css
+│   └── js/script.js
+└── tests/
+    ├── test_app.py
+    └── test_model.py</pre>
+                </div>
+
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-link-45deg text-success me-2"></i>Quick Links</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <a href="{{ url_for('predict') }}" class="text-info text-decoration-none">
+                                <i class="bi bi-calculator me-2"></i>Make a Prediction
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('dashboard') }}" class="text-info text-decoration-none">
+                                <i class="bi bi-graph-up me-2"></i>View Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://archive.ics.uci.edu/ml/datasets/Statlog+(German+Credit+Data)"
+                               target="_blank" class="text-info text-decoration-none">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>UCI Dataset Page
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

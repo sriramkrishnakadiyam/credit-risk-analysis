@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Credit Risk Classification — Home{% endblock %}
+
+{% block content %}
+<!-- ── Hero Section ────────────────────────────────────────── -->
+<section class="hero-section">
+    <div class="hero-bg-effects">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-7">
+                <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2 animate-fade-in">
+                    <i class="bi bi-cpu me-1"></i> Machine Learning Powered
+                </span>
+                <h1 class="display-3 fw-800 mb-4 animate-slide-up">
+                    Credit Risk<br>
+                    <span class="text-gradient">Classification</span>
+                </h1>
+                <p class="lead text-secondary mb-4 animate-slide-up delay-1">
+                    Harness the power of <strong>Logistic Regression</strong> to evaluate credit risk
+                    in real time. Classify applicants into <span class="text-success fw-semibold">Low</span>,
+                    <span class="text-warning fw-semibold">Medium</span>, and
+                    <span class="text-danger fw-semibold">High</span> risk categories with
+                    transparent probability scores.
+                </p>
+                <div class="d-flex gap-3 flex-wrap animate-slide-up delay-2">
+                    <a href="{{ url_for('predict') }}" class="btn btn-glow btn-lg px-4">
+                        <i class="bi bi-lightning-charge me-2"></i>Start Prediction
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-bar-chart me-2"></i>View Dashboard
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-visual animate-float">
+                    <div class="glass-card p-4 text-center">
+                        <div class="display-1 mb-3">🛡️</div>
+                        <h4 class="fw-bold text-gradient">Risk Score</h4>
+                        <div class="risk-meter mt-3">
+                            <div class="risk-meter-fill"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-success">Low</small>
+                            <small class="text-warning">Medium</small>
+                            <small class="text-danger">High</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Features Section ───────────────────────────────────── -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="text-secondary">Three simple steps to assess credit risk</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="glass-card feature-card h-100 p-4 text-center">
+                    <div class="feature-icon bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <h5 class="fw-bold mt-3">1. Enter Details</h5>
+                    <p class="text-secondary mb-0">
+                        Fill in the applicant's financial and personal information through our intuitive form.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card feature-card h-100 p-4 text-center">
+                    <div class="feature-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <h5 class="fw-bold mt-3">2. ML Processing</h5>
+                    <p class="text-secondary mb-0">
+                        Our Logistic Regression model preprocesses and analyses the data in milliseconds.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card feature-card h-100 p-4 text-center">
+                    <div class="feature-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h5 class="fw-bold mt-3">3. Get Results</h5>
+                    <p class="text-secondary mb-0">
+                        Receive the risk category with probability scores and actionable insights instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Stats Bar ──────────────────────────────────────────── -->
+<section class="py-5">
+    <div class="container">
+        <div class="glass-card p-4">
+            <div class="row text-center g-4">
+                <div class="col-6 col-md-3">
+                    <div class="stat-number text-gradient" data-count="1000">1,000</div>
+                    <div class="text-secondary small">Training Samples</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-number text-gradient" data-count="20">20</div>
+                    <div class="text-secondary small">Input Features</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-number text-gradient">3</div>
+                    <div class="text-secondary small">Risk Categories</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-number text-gradient">&lt; 1s</div>
+                    <div class="text-secondary small">Prediction Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
