@@ -246,13 +246,15 @@ Open your browser and navigate to: **http://localhost:5000**
 
 ### Available Pages
 
-| Route          | Description                        |
-|----------------|------------------------------------|
-| `/`            | Home page                          |
-| `/predict`     | Prediction form                    |
-| `/result`      | Prediction result (after submit)   |
-| `/dashboard`   | Model performance dashboard        |
-| `/about`       | Project information                |
+| Route          | Description                                    |
+|----------------|------------------------------------------------|
+| `/`            | Home page                                      |
+| `/predict`     | Prediction form                                |
+| `/result`      | Prediction result (after submit)               |
+| `/dashboard`   | Model performance dashboard                    |
+| `/about`       | Project information                            |
+| `/chat`        | Dedicated AI Credit Advisor interactive chat   |
+| `/api/chat`    | REST API endpoint for chat messages (POST)     |
 
 ---
 

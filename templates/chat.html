@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}AI Credit Advisor — Chat{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <span class="badge rounded-pill bg-primary bg-opacity-25 text-primary mb-3 px-3 py-2">
+                <i class="bi bi-robot me-1"></i> Financial Intelligence
+            </span>
+            <h1 class="fw-bold">CreditRisk <span class="text-gradient">AI Advisor</span></h1>
+            <p class="text-secondary col-lg-7 mx-auto">
+                Ask questions about credit risk classification, loan eligibility, machine learning metrics,
+                and actionable strategies to improve applicant approval chances.
+            </p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-xl-8">
+                <div class="glass-card chat-card d-flex flex-column" style="height: 650px;">
+                    <!-- Chat Header -->
+                    <div class="chat-header p-3 px-4 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center">
+                            <div class="chat-avatar me-3 position-relative">
+                                <span class="fs-4">🛡️</span>
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle"></span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">CreditRisk AI Assistant</h6>
+                                <small class="text-secondary"><i class="bi bi-circle-fill text-success me-1" style="font-size: 0.5rem;"></i>Online &bull; Logistic Regression Advisor</small>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="clearChat()">
+                                <i class="bi bi-trash3 me-1"></i>Clear Chat
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Prompt Suggestion Chips -->
+                    <div class="px-4 py-2 bg-dark bg-opacity-25 border-bottom border-secondary border-opacity-10 d-flex gap-2 overflow-x-auto flex-nowrap align-items-center" style="scrollbar-width: none;">
+                        <small class="text-secondary text-nowrap"><i class="bi bi-lightbulb text-warning me-1"></i>Try asking:</small>
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('How can I lower my credit risk?')">Lower credit risk?</button>
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('Explain model accuracy and recall')">Model metrics?</button>
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('Explain the 3 risk categories')">Risk categories?</button>
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('Why is checking account status so important?')">Checking account impact?</button>
+                    </div>
+
+                    <!-- Chat Body / Messages Area -->
+                    <div class="chat-body p-4 flex-grow-1 overflow-y-auto d-flex flex-column gap-3" id="chatMessages">
+                        <!-- Welcome message -->
+                        <div class="chat-message bot-message d-flex gap-3 animate-fade-in">
+                            <div class="msg-avatar">🛡️</div>
+                            <div class="msg-content p-3 glass-card border-primary border-opacity-25">
+                                <p class="mb-2 fw-semibold text-info">Hello! I'm CreditRisk AI, your virtual credit risk & lending advisor.</p>
+                                <p class="mb-2 text-secondary small">I can explain how loan features affect risk, walk through the <strong>Logistic Regression model</strong> evaluation results (75% accuracy, 80% recall), and provide tips on moving from High/Medium to Low risk.</p>
+                                <p class="mb-0 text-secondary small">What would you like to explore today?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Bar -->
+                    <div class="chat-footer p-3 px-4 border-top border-secondary border-opacity-25 bg-dark bg-opacity-25">
+                        <form id="chatForm" onsubmit="handleChatSubmit(event)" class="d-flex gap-2 align-items-center">
+                            <input type="text" id="chatInput" class="form-control glass-input flex-grow-1"
+                                   placeholder="Ask anything about credit risk, loans, or the ML model…" autocomplete="off" required>
+                            <button type="submit" id="chatSendBtn" class="btn btn-glow px-4">
+                                <i class="bi bi-send-fill me-1"></i>Send
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

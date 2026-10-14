@@ -52,6 +52,29 @@ def test_about_page(client):
     assert b"About" in response.data
 
 
+def test_chat_page(client):
+    """AI Chat page should load."""
+    response = client.get("/chat")
+    assert response.status_code == 200
+    assert b"CreditRisk" in response.data
+    assert b"AI Advisor" in response.data
+
+
+def test_api_chat_endpoint(client):
+    """AI Chat API should return valid answer to query."""
+    response = client.post("/api/chat", json={"message": "How can I lower my credit risk?"})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert "reply" in data
+    assert len(data["reply"]) > 20
+
+
+def test_api_chat_empty(client):
+    """Empty message should return 400 error."""
+    response = client.post("/api/chat", json={"message": ""})
+    assert response.status_code == 400
+
+
 def test_404_page(client):
     """Non-existent route should return 404."""
     response = client.get("/nonexistent-page")

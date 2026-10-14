@@ -15,7 +15,7 @@ import os
 # Ensure the project root is on sys.path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 
 from src.config import (
     SECRET_KEY,
@@ -26,6 +26,7 @@ from src.config import (
     NUMERICAL_FEATURES,
 )
 from src.model_utils import predict_single, load_metrics, load_model, load_preprocessor
+from src.ai_chat import generate_ai_response
 
 # ── App factory ─────────────────────────────────────────────────────────────
 
@@ -218,6 +219,26 @@ def dashboard():
 def about():
     """Project information page."""
     return render_template("about.html")
+
+
+@app.route("/chat")
+def chat():
+    """Dedicated AI Credit Advisor Chat page."""
+    return render_template("chat.html")
+
+
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    """AI Chat API endpoint for interactive conversation."""
+    data = request.get_json(silent=True) or {}
+    user_message = data.get("message", "").strip()
+    history = data.get("history", [])
+
+    if not user_message:
+        return jsonify({"error": "Message cannot be empty."}), 400
+
+    reply = generate_ai_response(user_message, history=history)
+    return jsonify({"reply": reply})
 
 
 # ── Error handlers ──────────────────────────────────────────────────────────

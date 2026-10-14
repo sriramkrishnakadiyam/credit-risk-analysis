@@ -167,3 +167,247 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// ── AI Chat Interactive Client ─────────────────────────────────
+
+// Simple markdown formatter for chat bubbles
+function formatChatMarkdown(text) {
+    if (!text) return "";
+    let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    // Bold **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic *text*
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Inline code `text`
+    html = html.replace(/`(.*?)`/g, '<code class="px-1 bg-dark bg-opacity-50 rounded text-info">$1</code>');
+
+    // Bullet points
+    const lines = html.split('\n');
+    let inList = false;
+    let result = [];
+
+    for (let line of lines) {
+        let trimmed = line.trim();
+        if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+            if (!inList) {
+                result.push('<ul class="mb-2 ps-3">');
+                inList = true;
+            }
+            result.push(`<li>${trimmed.substring(2)}</li>`);
+        } else if (/^\d+\.\s/.test(trimmed)) {
+            if (!inList) {
+                result.push('<ol class="mb-2 ps-3">');
+                inList = true;
+            }
+            result.push(`<li>${trimmed.replace(/^\d+\.\s/, '')}</li>`);
+        } else {
+            if (inList) {
+                result.push('</ul>');
+                inList = false;
+            }
+            if (trimmed) {
+                result.push(`<p class="mb-2">${trimmed}</p>`);
+            }
+        }
+    }
+    if (inList) {
+        result.push('</ul>');
+    }
+
+    return result.join('');
+}
+
+// Dedicated full-page chat handler
+async function handleChatSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('chatInput');
+    const container = document.getElementById('chatMessages');
+    const sendBtn = document.getElementById('chatSendBtn');
+
+    if (!input || !container) return;
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+
+    // Append user message
+    container.innerHTML += `
+        <div class="chat-message user-message d-flex gap-2 animate-fade-in">
+            <div class="msg-avatar text-light"><i class="bi bi-person-fill"></i></div>
+            <div class="msg-content p-3">
+                <p class="mb-0">${msg.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            </div>
+        </div>
+    `;
+
+    // Append typing indicator
+    const typingId = 'typing-' + Date.now();
+    container.innerHTML += `
+        <div id="${typingId}" class="chat-message bot-message d-flex gap-2 animate-fade-in">
+            <div class="msg-avatar">🛡️</div>
+            <div class="msg-content p-3 glass-card border-secondary border-opacity-25">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    `;
+    container.scrollTop = container.scrollHeight;
+
+    if (sendBtn) sendBtn.disabled = true;
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        const formattedReply = formatChatMarkdown(data.reply || data.error || "No response received.");
+        container.innerHTML += `
+            <div class="chat-message bot-message d-flex gap-2 animate-fade-in">
+                <div class="msg-avatar">🛡️</div>
+                <div class="msg-content p-3 glass-card border-primary border-opacity-25">
+                    ${formattedReply}
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+        container.innerHTML += `
+            <div class="chat-message bot-message d-flex gap-2 animate-fade-in">
+                <div class="msg-avatar">🛡️</div>
+                <div class="msg-content p-3 glass-card border-danger text-danger">
+                    Error contacting AI service. Please check your connection.
+                </div>
+            </div>
+        `;
+    } finally {
+        if (sendBtn) sendBtn.disabled = false;
+        container.scrollTop = container.scrollHeight;
+        input.focus();
+    }
+}
+
+// Quick Prompt Sender
+function sendQuickPrompt(promptText) {
+    const input = document.getElementById('chatInput');
+    if (input) {
+        input.value = promptText;
+        document.getElementById('chatForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+}
+
+// Clear Chat Function
+function clearChat() {
+    const container = document.getElementById('chatMessages');
+    if (container) {
+        container.innerHTML = `
+            <div class="chat-message bot-message d-flex gap-3 animate-fade-in">
+                <div class="msg-avatar">🛡️</div>
+                <div class="msg-content p-3 glass-card border-primary border-opacity-25">
+                    <p class="mb-2 fw-semibold text-info">Chat cleared! How can I assist you with credit risk classification?</p>
+                    <p class="mb-0 text-secondary small">Ask about loan eligibility, Logistic Regression metrics (75% accuracy, 80% recall), or input features.</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ── Floating Chat Widget Toggle & Submission ───────────────────
+function toggleFloatingChat() {
+    const popup = document.getElementById('aiChatPopup');
+    const closedIcon = document.querySelector('.chat-icon-closed');
+    const openIcon = document.querySelector('.chat-icon-open');
+
+    if (!popup) return;
+
+    if (popup.classList.contains('d-none')) {
+        popup.classList.remove('d-none');
+        if (closedIcon) closedIcon.classList.add('d-none');
+        if (openIcon) openIcon.classList.remove('d-none');
+        const input = document.getElementById('popupChatInput');
+        if (input) setTimeout(() => input.focus(), 150);
+    } else {
+        popup.classList.add('d-none');
+        if (closedIcon) closedIcon.classList.remove('d-none');
+        if (openIcon) openIcon.classList.add('d-none');
+    }
+}
+
+async function handlePopupChatSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('popupChatInput');
+    const container = document.getElementById('popupChatMessages');
+    if (!input || !container) return;
+
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+
+    // Append user bubble
+    container.innerHTML += `
+        <div class="chat-message user-message d-flex gap-2">
+            <div class="msg-content p-2 px-3 small">
+                ${msg.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+            </div>
+        </div>
+    `;
+
+    // Append typing indicator
+    const typingId = 'popup-typing-' + Date.now();
+    container.innerHTML += `
+        <div id="${typingId}" class="chat-message bot-message d-flex gap-2">
+            <div class="msg-avatar small">🛡️</div>
+            <div class="msg-content p-2 px-3 glass-card small">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    `;
+    container.scrollTop = container.scrollHeight;
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        const formatted = formatChatMarkdown(data.reply || "No response received.");
+        container.innerHTML += `
+            <div class="chat-message bot-message d-flex gap-2">
+                <div class="msg-avatar small">🛡️</div>
+                <div class="msg-content p-2 px-3 glass-card small border-primary border-opacity-25">
+                    ${formatted}
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+        container.innerHTML += `
+            <div class="chat-message bot-message d-flex gap-2">
+                <div class="msg-avatar small">🛡️</div>
+                <div class="msg-content p-2 px-3 glass-card small text-danger">
+                    Error connecting to AI service.
+                </div>
+            </div>
+        `;
+    } finally {
+        container.scrollTop = container.scrollHeight;
+    }
+}
