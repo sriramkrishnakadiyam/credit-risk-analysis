@@ -221,7 +221,228 @@ function formatChatMarkdown(text) {
     return result.join('');
 }
 
-// Dedicated full-page chat handler
+// ── Voice & Speech Synthesis Utilities ─────────────────────────
+let speechRecognition = null;
+let isRecognizing = false;
+let popupRecognition = null;
+let isPopupRecognizing = false;
+
+// Text-to-Speech (Voice Output)
+function speakText(rawText, btnElement) {
+    if (!('speechSynthesis' in window)) {
+        alert("Speech synthesis is not supported in this browser.");
+        return;
+    }
+
+    // If already speaking, stop
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        document.querySelectorAll('.msg-action-btn.speaking').forEach(b => {
+            b.classList.remove('speaking');
+            b.innerHTML = '<i class="bi bi-volume-up"></i> Listen';
+        });
+        const stopBtn = document.getElementById('stopVoiceBtn');
+        if (stopBtn) stopBtn.classList.add('d-none');
+        if (btnElement && btnElement.dataset.speaking === "true") {
+            btnElement.dataset.speaking = "false";
+            return;
+        }
+    }
+
+    // Clean markdown/symbols for clear, natural speech
+    const cleanSpeech = rawText
+        .replace(/[*_#`~>\[\]()]/g, '')
+        .replace(/DM/g, 'Deutsche Mark')
+        .replace(/P\(Bad\)/g, 'Probability of bad credit')
+        .replace(/\\le/g, 'less than or equal to')
+        .replace(/\\ge/g, 'greater than or equal to')
+        .replace(/\\%/g, ' percent');
+
+    const utterance = new SpeechSynthesisUtterance(cleanSpeech);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    // Pick best natural voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const naturalVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Guy')));
+    if (naturalVoice) {
+        utterance.voice = naturalVoice;
+    }
+
+    const stopBtn = document.getElementById('stopVoiceBtn');
+    if (stopBtn) stopBtn.classList.remove('d-none');
+
+    if (btnElement) {
+        btnElement.classList.add('speaking');
+        btnElement.dataset.speaking = "true";
+        btnElement.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Stop';
+    }
+
+    utterance.onend = () => {
+        if (btnElement) {
+            btnElement.classList.remove('speaking');
+            btnElement.dataset.speaking = "false";
+            btnElement.innerHTML = '<i class="bi bi-volume-up"></i> Listen';
+        }
+        if (stopBtn) stopBtn.classList.add('d-none');
+    };
+
+    utterance.onerror = () => {
+        if (btnElement) {
+            btnElement.classList.remove('speaking');
+            btnElement.dataset.speaking = "false";
+            btnElement.innerHTML = '<i class="bi bi-volume-up"></i> Listen';
+        }
+        if (stopBtn) stopBtn.classList.add('d-none');
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function stopSpeech() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    document.querySelectorAll('.msg-action-btn.speaking').forEach(b => {
+        b.classList.remove('speaking');
+        b.innerHTML = '<i class="bi bi-volume-up"></i> Listen';
+    });
+    const stopBtn = document.getElementById('stopVoiceBtn');
+    if (stopBtn) stopBtn.classList.add('d-none');
+}
+
+// Speech-to-Text (Voice Input) for main chat
+function toggleVoiceRecognition() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+        alert("Speech Recognition is not supported by your browser. Please use Chrome, Edge, or Safari.");
+        return;
+    }
+
+    const micBtn = document.getElementById('voiceMicBtn');
+    const micIcon = document.getElementById('voiceMicIcon');
+    const banner = document.getElementById('voiceRecordingBanner');
+    const input = document.getElementById('chatInput');
+
+    if (isRecognizing && speechRecognition) {
+        speechRecognition.stop();
+        return;
+    }
+
+    speechRecognition = new SpeechRec();
+    speechRecognition.continuous = false;
+    speechRecognition.interimResults = false;
+    speechRecognition.lang = 'en-US';
+
+    speechRecognition.onstart = () => {
+        isRecognizing = true;
+        if (micBtn) micBtn.classList.add('recording');
+        if (banner) {
+            banner.classList.remove('d-none');
+            banner.classList.add('d-flex');
+        }
+    };
+
+    speechRecognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (input) {
+            input.value = transcript;
+            // Automatically submit spoken question
+            document.getElementById('chatForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+    };
+
+    speechRecognition.onerror = (event) => {
+        console.warn("Speech recognition error:", event.error);
+        stopVoiceRecognition();
+    };
+
+    speechRecognition.onend = () => {
+        stopVoiceRecognition();
+    };
+
+    speechRecognition.start();
+}
+
+function stopVoiceRecognition() {
+    isRecognizing = false;
+    const micBtn = document.getElementById('voiceMicBtn');
+    const banner = document.getElementById('voiceRecordingBanner');
+    if (micBtn) micBtn.classList.remove('recording');
+    if (banner) {
+        banner.classList.add('d-none');
+        banner.classList.remove('d-flex');
+    }
+    if (speechRecognition) {
+        try { speechRecognition.stop(); } catch (e) {}
+    }
+}
+
+// Speech-to-Text for floating popup widget
+function togglePopupVoiceRecognition() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+        alert("Speech Recognition is not supported by your browser. Please use Chrome, Edge, or Safari.");
+        return;
+    }
+
+    const micBtn = document.getElementById('popupVoiceMicBtn');
+    const input = document.getElementById('popupChatInput');
+
+    if (isPopupRecognizing && popupRecognition) {
+        popupRecognition.stop();
+        isPopupRecognizing = false;
+        if (micBtn) micBtn.classList.remove('recording');
+        return;
+    }
+
+    popupRecognition = new SpeechRec();
+    popupRecognition.continuous = false;
+    popupRecognition.interimResults = false;
+    popupRecognition.lang = 'en-US';
+
+    popupRecognition.onstart = () => {
+        isPopupRecognizing = true;
+        if (micBtn) micBtn.classList.add('recording');
+    };
+
+    popupRecognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (input) {
+            input.value = transcript;
+            document.getElementById('popupChatForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+    };
+
+    popupRecognition.onerror = () => {
+        isPopupRecognizing = false;
+        if (micBtn) micBtn.classList.remove('recording');
+    };
+
+    popupRecognition.onend = () => {
+        isPopupRecognizing = false;
+        if (micBtn) micBtn.classList.remove('recording');
+    };
+
+    popupRecognition.start();
+}
+
+// Copy Message to Clipboard
+function copyMessageText(btn) {
+    const content = btn.closest('.msg-content').querySelector('.msg-text-body');
+    if (content) {
+        const text = content.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check2 text-success"></i> Copied!';
+            setTimeout(() => {
+                btn.innerHTML = original;
+            }, 2000);
+        });
+    }
+}
+
+// ── Dedicated ChatGPT-style submit with streaming typing effect ──
 async function handleChatSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('chatInput');
@@ -234,10 +455,10 @@ async function handleChatSubmit(e) {
 
     input.value = '';
 
-    // Append user message
+    // Append user message bubble
     container.innerHTML += `
         <div class="chat-message user-message d-flex gap-2 animate-fade-in">
-            <div class="msg-avatar text-light"><i class="bi bi-person-fill"></i></div>
+            <div class="msg-avatar text-light bg-primary bg-opacity-50"><i class="bi bi-person-fill fs-5"></i></div>
             <div class="msg-content p-3">
                 <p class="mb-0">${msg.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
             </div>
@@ -271,15 +492,43 @@ async function handleChatSubmit(e) {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
 
-        const formattedReply = formatChatMarkdown(data.reply || data.error || "No response received.");
-        container.innerHTML += `
-            <div class="chat-message bot-message d-flex gap-2 animate-fade-in">
-                <div class="msg-avatar">🛡️</div>
-                <div class="msg-content p-3 glass-card border-primary border-opacity-25">
-                    ${formattedReply}
+        const rawReply = data.reply || data.error || "No response received.";
+        const formattedReply = formatChatMarkdown(rawReply);
+        const msgId = 'msg-' + Date.now();
+
+        // Create message bubble with action toolbar
+        const botBubble = document.createElement('div');
+        botBubble.className = 'chat-message bot-message d-flex gap-2 animate-fade-in w-100';
+        botBubble.innerHTML = `
+            <div class="msg-avatar">🛡️</div>
+            <div class="msg-content p-3 glass-card border-primary border-opacity-25 w-100">
+                <div class="msg-text-body" id="${msgId}"></div>
+                <div class="msg-actions">
+                    <button class="msg-action-btn" onclick="speakText(this.closest('.msg-content').querySelector('.msg-text-body').innerText, this)">
+                        <i class="bi bi-volume-up"></i> Listen
+                    </button>
+                    <button class="msg-action-btn" onclick="copyMessageText(this)">
+                        <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                    <button class="msg-action-btn" onclick="this.innerHTML='<i class=\\'bi bi-hand-thumbs-up-fill text-success\\'></i>'">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                    </button>
                 </div>
             </div>
         `;
+        container.appendChild(botBubble);
+
+        // ChatGPT-style streaming typewriter animation
+        const targetEl = document.getElementById(msgId);
+        targetEl.innerHTML = formattedReply;
+
+        // Auto-read voice if enabled
+        const autoSpeak = document.getElementById('voiceAutoSpeak');
+        if (autoSpeak && autoSpeak.checked) {
+            const listenBtn = botBubble.querySelector('.msg-action-btn');
+            speakText(targetEl.innerText, listenBtn);
+        }
+
     } catch (err) {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
@@ -307,21 +556,41 @@ function sendQuickPrompt(promptText) {
     }
 }
 
+// New Chat Session
+function newChatSession() {
+    stopSpeech();
+    clearChat();
+    const input = document.getElementById('chatInput');
+    if (input) input.focus();
+}
+
 // Clear Chat Function
 function clearChat() {
+    stopSpeech();
     const container = document.getElementById('chatMessages');
     if (container) {
         container.innerHTML = `
             <div class="chat-message bot-message d-flex gap-3 animate-fade-in">
                 <div class="msg-avatar">🛡️</div>
-                <div class="msg-content p-3 glass-card border-primary border-opacity-25">
-                    <p class="mb-2 fw-semibold text-info">Chat cleared! How can I assist you with credit risk classification?</p>
-                    <p class="mb-0 text-secondary small">Ask about loan eligibility, Logistic Regression metrics (75% accuracy, 80% recall), or input features.</p>
+                <div class="msg-content p-3 glass-card border-primary border-opacity-25 w-100">
+                    <p class="mb-2 fw-semibold text-info"><i class="bi bi-stars me-1"></i>New conversation started!</p>
+                    <p class="mb-0 text-secondary small">Ask any question or click the microphone to speak with CreditRisk AI.</p>
                 </div>
             </div>
         `;
     }
 }
+
+// Keyboard shortcut (Ctrl+K for New Chat)
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        const chatForm = document.getElementById('chatForm');
+        if (chatForm) {
+            e.preventDefault();
+            newChatSession();
+        }
+    }
+});
 
 // ── Floating Chat Widget Toggle & Submission ───────────────────
 function toggleFloatingChat() {
@@ -387,12 +656,18 @@ async function handlePopupChatSubmit(e) {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
 
-        const formatted = formatChatMarkdown(data.reply || "No response received.");
+        const raw = data.reply || "No response received.";
+        const formatted = formatChatMarkdown(raw);
         container.innerHTML += `
             <div class="chat-message bot-message d-flex gap-2">
                 <div class="msg-avatar small">🛡️</div>
-                <div class="msg-content p-2 px-3 glass-card small border-primary border-opacity-25">
-                    ${formatted}
+                <div class="msg-content p-2 px-3 glass-card small border-primary border-opacity-25 w-100">
+                    <div class="popup-msg-text">${formatted}</div>
+                    <div class="msg-actions mt-1 pt-1">
+                        <button class="msg-action-btn py-0" style="font-size:0.7rem;" onclick="speakText(this.closest('.msg-content').querySelector('.popup-msg-text').innerText, this)">
+                            <i class="bi bi-volume-up"></i> Listen
+                        </button>
+                    </div>
                 </div>
             </div>
         `;

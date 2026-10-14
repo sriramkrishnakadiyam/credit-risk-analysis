@@ -1,77 +1,182 @@
 {% extends "base.html" %}
-{% block title %}AI Credit Advisor — Chat{% endblock %}
+{% block title %}CreditRisk AI — ChatGPT Style Financial Advisor{% endblock %}
 
 {% block content %}
-<section class="py-5">
-    <div class="container">
-        <!-- Header -->
-        <div class="text-center mb-4">
-            <span class="badge rounded-pill bg-primary bg-opacity-25 text-primary mb-3 px-3 py-2">
-                <i class="bi bi-robot me-1"></i> Financial Intelligence
-            </span>
-            <h1 class="fw-bold">CreditRisk <span class="text-gradient">AI Advisor</span></h1>
-            <p class="text-secondary col-lg-7 mx-auto">
-                Ask questions about credit risk classification, loan eligibility, machine learning metrics,
-                and actionable strategies to improve applicant approval chances.
-            </p>
-        </div>
+<section class="py-4">
+    <div class="container-fluid px-lg-5">
+        <div class="row g-4 justify-content-center">
 
-        <div class="row justify-content-center">
-            <div class="col-lg-9 col-xl-8">
-                <div class="glass-card chat-card d-flex flex-column" style="height: 650px;">
-                    <!-- Chat Header -->
-                    <div class="chat-header p-3 px-4 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25">
+            <!-- ── ChatGPT Style Sidebar ──────────────────────── -->
+            <div class="col-lg-3 col-xl-3 d-none d-lg-block">
+                <div class="glass-card p-3 h-100 d-flex flex-column" style="min-height: 720px;">
+                    <!-- New Chat Button -->
+                    <button type="button" class="btn btn-outline-light w-100 mb-3 text-start d-flex align-items-center justify-content-between p-2 px-3 rounded-3" onclick="newChatSession()">
+                        <span><i class="bi bi-plus-lg me-2 text-info"></i>New Chat</span>
+                        <kbd class="text-secondary small bg-dark border-0">Ctrl+K</kbd>
+                    </button>
+
+                    <!-- Voice Settings Card -->
+                    <div class="p-3 mb-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-semibold text-light"><i class="bi bi-volume-up text-primary me-2"></i>Voice Auto-Speak</span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="voiceAutoSpeak" checked>
+                            </div>
+                        </div>
+                        <small class="text-secondary" style="font-size: 0.75rem;">Reads AI responses aloud automatically using Speech Synthesis.</small>
+                    </div>
+
+                    <!-- Preset Topics -->
+                    <div class="text-secondary small text-uppercase fw-bold mb-2 px-2" style="font-size: 0.7rem; letter-spacing: 0.05em;">Suggested Prompts</div>
+                    <div class="d-flex flex-column gap-1 flex-grow-1 overflow-y-auto" style="max-height: 400px;">
+                        <button type="button" class="btn btn-sm btn-dark text-start text-secondary hover-light p-2 rounded-2 border-0 bg-transparent" onclick="sendQuickPrompt('How can I lower my credit risk?')">
+                            <i class="bi bi-lightbulb text-warning me-2"></i>Lower My Default Risk
+                        </button>
+                        <button type="button" class="btn btn-sm btn-dark text-start text-secondary hover-light p-2 rounded-2 border-0 bg-transparent" onclick="sendQuickPrompt('Explain model accuracy and recall (75% / 80%)')">
+                            <i class="bi bi-bar-chart-fill text-info me-2"></i>Model Metrics &amp; Recall
+                        </button>
+                        <button type="button" class="btn btn-sm btn-dark text-start text-secondary hover-light p-2 rounded-2 border-0 bg-transparent" onclick="sendQuickPrompt('Explain the 3 risk categories and thresholds')">
+                            <i class="bi bi-shield-check text-success me-2"></i>3 Risk Tiers Explained
+                        </button>
+                        <button type="button" class="btn btn-sm btn-dark text-start text-secondary hover-light p-2 rounded-2 border-0 bg-transparent" onclick="sendQuickPrompt('Why is checking account status the #1 predictor?')">
+                            <i class="bi bi-bank text-primary me-2"></i>Checking Account Impact
+                        </button>
+                        <button type="button" class="btn btn-sm btn-dark text-start text-secondary hover-light p-2 rounded-2 border-0 bg-transparent" onclick="sendQuickPrompt('What loan duration carries the lowest risk?')">
+                            <i class="bi bi-clock-history text-danger me-2"></i>Safe Loan Durations
+                        </button>
+                        <button type="button" class="btn btn-sm btn-dark text-start text-secondary hover-light p-2 rounded-2 border-0 bg-transparent" onclick="sendQuickPrompt('Are AI credit predictions legally binding?')">
+                            <i class="bi bi-file-earmark-text text-secondary me-2"></i>Regulatory Disclaimers
+                        </button>
+                    </div>
+
+                    <!-- Clear / Footer -->
+                    <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+                        <button class="btn btn-sm text-secondary hover-light w-100 text-start p-2" onclick="clearChat()">
+                            <i class="bi bi-trash3 me-2"></i>Clear conversation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Main ChatGPT Stream Area ───────────────────── -->
+            <div class="col-lg-9 col-xl-9">
+                <div class="glass-card chat-card d-flex flex-column" style="height: 720px;">
+
+                    <!-- Top Bar -->
+                    <div class="p-3 px-4 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25 bg-dark bg-opacity-25">
                         <div class="d-flex align-items-center">
                             <div class="chat-avatar me-3 position-relative">
                                 <span class="fs-4">🛡️</span>
                                 <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle"></span>
                             </div>
                             <div>
-                                <h6 class="mb-0 fw-bold">CreditRisk AI Assistant</h6>
-                                <small class="text-secondary"><i class="bi bi-circle-fill text-success me-1" style="font-size: 0.5rem;"></i>Online &bull; Logistic Regression Advisor</small>
+                                <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                                    CreditRisk AI Advisor
+                                    <span class="badge bg-primary bg-opacity-25 text-info py-0 px-2 rounded-pill" style="font-size: 0.65rem;">ChatGPT Edition</span>
+                                </h6>
+                                <small class="text-secondary"><i class="bi bi-mic text-info me-1"></i>Voice-Enabled &bull; Logistic Regression Core</small>
                             </div>
                         </div>
-                        <div>
-                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="clearChat()">
-                                <i class="bi bi-trash3 me-1"></i>Clear Chat
+
+                        <!-- Active voice stop / status controls -->
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="stopVoiceBtn" class="btn btn-sm btn-outline-danger d-none rounded-pill px-3" onclick="stopSpeech()">
+                                <i class="bi bi-stop-circle me-1"></i>Stop Voice
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-lg-none" onclick="newChatSession()">
+                                <i class="bi bi-plus-lg me-1"></i>New
                             </button>
                         </div>
                     </div>
 
-                    <!-- Prompt Suggestion Chips -->
-                    <div class="px-4 py-2 bg-dark bg-opacity-25 border-bottom border-secondary border-opacity-10 d-flex gap-2 overflow-x-auto flex-nowrap align-items-center" style="scrollbar-width: none;">
-                        <small class="text-secondary text-nowrap"><i class="bi bi-lightbulb text-warning me-1"></i>Try asking:</small>
-                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('How can I lower my credit risk?')">Lower credit risk?</button>
-                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('Explain model accuracy and recall')">Model metrics?</button>
-                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('Explain the 3 risk categories')">Risk categories?</button>
-                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill text-nowrap py-0 px-2 small" onclick="sendQuickPrompt('Why is checking account status so important?')">Checking account impact?</button>
+                    <!-- Voice Recording Banner (Appears when user is speaking into mic) -->
+                    <div id="voiceRecordingBanner" class="p-2 px-3 bg-danger bg-opacity-10 border-bottom border-danger border-opacity-25 d-none align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <span class="spinner-grow spinner-grow-sm text-danger me-2" role="status"></span>
+                            <span class="text-danger small fw-semibold"><i class="bi bi-mic-fill me-1"></i>Listening... Speak now (Speech-to-Text active)</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" onclick="stopVoiceRecognition()">Cancel</button>
                     </div>
 
-                    <!-- Chat Body / Messages Area -->
+                    <!-- Chat Messages Stream -->
                     <div class="chat-body p-4 flex-grow-1 overflow-y-auto d-flex flex-column gap-3" id="chatMessages">
                         <!-- Welcome message -->
                         <div class="chat-message bot-message d-flex gap-3 animate-fade-in">
                             <div class="msg-avatar">🛡️</div>
-                            <div class="msg-content p-3 glass-card border-primary border-opacity-25">
-                                <p class="mb-2 fw-semibold text-info">Hello! I'm CreditRisk AI, your virtual credit risk & lending advisor.</p>
-                                <p class="mb-2 text-secondary small">I can explain how loan features affect risk, walk through the <strong>Logistic Regression model</strong> evaluation results (75% accuracy, 80% recall), and provide tips on moving from High/Medium to Low risk.</p>
-                                <p class="mb-0 text-secondary small">What would you like to explore today?</p>
+                            <div class="msg-content p-3 glass-card border-primary border-opacity-25 w-100">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-info"><i class="bi bi-stars me-1"></i>CreditRisk AI Assistant</span>
+                                    <span class="badge bg-secondary bg-opacity-25 text-secondary small">Logistic Regression Advisor</span>
+                                </div>
+                                <p class="mb-2 text-secondary">
+                                    Hello! I am your interactive credit risk advisor. You can <strong>type your questions</strong> or click the <strong>microphone button (🎙️)</strong> to speak with me directly.
+                                </p>
+                                <p class="mb-3 text-secondary small">
+                                    Ask me about loan requirements, risk mitigation, machine learning statistics (75% accuracy, 80% recall), or test applicant scenarios.
+                                </p>
+
+                                <!-- ChatGPT Style Starter Cards -->
+                                <div class="row g-2 mt-1">
+                                    <div class="col-md-6">
+                                        <div class="p-2 px-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 cursor-pointer starter-card" onclick="sendQuickPrompt('How can I lower my credit risk?')">
+                                            <div class="fw-semibold small text-light">💡 How to Lower Risk?</div>
+                                            <div class="text-secondary" style="font-size: 0.75rem;">Actionable strategies to qualify for low risk approval</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-2 px-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 cursor-pointer starter-card" onclick="sendQuickPrompt('Explain model accuracy and recall (75% / 80%)')">
+                                            <div class="fw-semibold small text-light">📊 Model Metrics Explained</div>
+                                            <div class="text-secondary" style="font-size: 0.75rem;">Why 80% recall protects lenders from default losses</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-2 px-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 cursor-pointer starter-card" onclick="sendQuickPrompt('Why is checking account status so important?')">
+                                            <div class="fw-semibold small text-light">🏦 Checking Balance Impact</div>
+                                            <div class="text-secondary" style="font-size: 0.75rem;">How liquid reserves influence credit rating</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-2 px-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 cursor-pointer starter-card" onclick="sendQuickPrompt('Explain the 3 risk categories and thresholds')">
+                                            <div class="fw-semibold small text-light">🎯 3 Risk Tiers</div>
+                                            <div class="text-secondary" style="font-size: 0.75rem;">Low (≤30%), Medium (30-60%), High (&gt;60%)</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Chat Input Bar -->
+                    <!-- ── ChatGPT Style Prompt Input Bar ────────────── -->
                     <div class="chat-footer p-3 px-4 border-top border-secondary border-opacity-25 bg-dark bg-opacity-25">
                         <form id="chatForm" onsubmit="handleChatSubmit(event)" class="d-flex gap-2 align-items-center">
-                            <input type="text" id="chatInput" class="form-control glass-input flex-grow-1"
-                                   placeholder="Ask anything about credit risk, loans, or the ML model…" autocomplete="off" required>
-                            <button type="submit" id="chatSendBtn" class="btn btn-glow px-4">
-                                <i class="bi bi-send-fill me-1"></i>Send
+                            <!-- Voice Input Microphone Button -->
+                            <button type="button" id="voiceMicBtn" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                    style="width: 44px; height: 44px;" onclick="toggleVoiceRecognition()" title="Voice Input (Click to speak)">
+                                <i class="bi bi-mic-fill fs-5" id="voiceMicIcon"></i>
+                            </button>
+
+                            <!-- Text Input Bar -->
+                            <div class="position-relative flex-grow-1">
+                                <input type="text" id="chatInput" class="form-control glass-input py-2 px-3 pe-5"
+                                       placeholder="Message CreditRisk AI or speak using the microphone…" autocomplete="off" required>
+                            </div>
+
+                            <!-- Send Button -->
+                            <button type="submit" id="chatSendBtn" class="btn btn-glow rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                    style="width: 44px; height: 44px;" title="Send Message">
+                                <i class="bi bi-arrow-up fs-5 fw-bold"></i>
                             </button>
                         </form>
+                        <div class="text-center mt-2">
+                            <small class="text-secondary" style="font-size: 0.7rem;">
+                                CreditRisk AI is an assistive decision-support model. Always review complete financial records before lending.
+                            </small>
+                        </div>
                     </div>
+
                 </div>
             </div>
+
         </div>
     </div>
 </section>

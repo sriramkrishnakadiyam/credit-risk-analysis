@@ -30,7 +30,8 @@ def generate_ai_response(user_message: str, history: list = None) -> str:
     # 1. Check for external LLM API if key is available
     if GEMINI_KEY:
         try:
-            import google.generativeai as genai
+            import importlib
+            genai = importlib.import_module("google.generativeai")
             genai.configure(api_key=GEMINI_KEY)
             model = genai.GenerativeModel("gemini-1.5-flash")
             system_prompt = (
