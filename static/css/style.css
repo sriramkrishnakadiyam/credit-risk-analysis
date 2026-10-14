@@ -102,7 +102,7 @@ body::before {
 
 .glass-input {
     background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
     color: var(--text-primary) !important;
     border-radius: 10px !important;
     padding: 0.6rem 1rem !important;
@@ -111,8 +111,27 @@ body::before {
 
 .glass-input:focus {
     border-color: var(--accent-blue) !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
     background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.was-validated .glass-input:invalid,
+.glass-input.is-invalid {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+    background-color: rgba(239, 68, 68, 0.06) !important;
+}
+
+.was-validated .glass-input:valid,
+.glass-input.is-valid {
+    border-color: #22c55e !important;
+}
+
+.invalid-feedback {
+    color: #f87171 !important;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.35rem;
 }
 
 .glass-input option {

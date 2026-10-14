@@ -5,15 +5,36 @@
 <section class="py-5">
     <div class="container">
         <!-- Header -->
-        <div class="text-center mb-5">
+        <div class="text-center mb-4">
             <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2">
                 <i class="bi bi-calculator me-1"></i> Prediction Engine
             </span>
             <h1 class="fw-bold">Credit Risk Prediction</h1>
-            <p class="text-secondary col-lg-8 mx-auto">
+            <p class="text-secondary col-lg-8 mx-auto mb-3">
                 Enter the applicant's details below. All fields are required.
                 The model will classify the applicant into Low, Medium, or High risk.
             </p>
+
+            <!-- Quick Demo Fill Buttons -->
+            <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
+                <span class="text-secondary align-self-center small me-2"><i class="bi bi-magic me-1"></i>Quick Test Demo:</span>
+                <button type="button" class="btn btn-sm btn-outline-success px-3" onclick="fillSampleData('low')">
+                    <i class="bi bi-check-circle me-1"></i>Fill Low Risk Sample
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger px-3" onclick="fillSampleData('high')">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Fill High Risk Sample
+                </button>
+            </div>
+        </div>
+
+        <!-- Validation Error Alert Banner -->
+        <div id="validationAlert" class="alert alert-danger d-none glass-alert mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill fs-4 me-3 text-danger"></i>
+                <div>
+                    <strong>Incomplete Form:</strong> Please fill in all required fields (highlighted in red) before classifying risk.
+                </div>
+            </div>
         </div>
 
         <!-- Prediction Form -->
@@ -31,14 +52,14 @@
                             <label for="duration_months" class="form-label">Loan Duration (months)</label>
                             <input type="number" class="form-control glass-input" id="duration_months"
                                    name="duration_months" min="1" max="120" required placeholder="e.g. 24">
-                            <div class="invalid-feedback">Enter a duration between 1 and 120 months.</div>
+                            <div class="invalid-feedback">Please enter a duration between 1 and 120 months.</div>
                         </div>
 
                         <div class="mb-3">
                             <label for="credit_amount" class="form-label">Credit Amount (DM)</label>
                             <input type="number" class="form-control glass-input" id="credit_amount"
                                    name="credit_amount" min="1" required placeholder="e.g. 5000">
-                            <div class="invalid-feedback">Enter a positive credit amount.</div>
+                            <div class="invalid-feedback">Please enter a positive credit amount.</div>
                         </div>
 
                         <div class="mb-3">
@@ -50,6 +71,7 @@
                                 <option value="3">3</option>
                                 <option value="4">4 — High</option>
                             </select>
+                            <div class="invalid-feedback">Please select an installment rate.</div>
                         </div>
 
                         <div class="mb-3">
@@ -60,6 +82,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select the loan purpose.</div>
                         </div>
 
                         <div class="mb-3">
@@ -71,6 +94,7 @@
                                 <option value="3">3</option>
                                 <option value="4">4</option>
                             </select>
+                            <div class="invalid-feedback">Please select the number of existing credits.</div>
                         </div>
                     </div>
                 </div>
@@ -90,6 +114,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select checking account status.</div>
                         </div>
 
                         <div class="mb-3">
@@ -100,6 +125,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select credit history.</div>
                         </div>
 
                         <div class="mb-3">
@@ -110,6 +136,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select savings account status.</div>
                         </div>
 
                         <div class="mb-3">
@@ -120,6 +147,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select other installment plans.</div>
                         </div>
 
                         <div class="mb-3">
@@ -130,6 +158,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select other debtors / guarantors.</div>
                         </div>
                     </div>
                 </div>
@@ -145,7 +174,7 @@
                             <label for="age" class="form-label">Age</label>
                             <input type="number" class="form-control glass-input" id="age"
                                    name="age" min="18" max="120" required placeholder="e.g. 35">
-                            <div class="invalid-feedback">Age must be between 18 and 120.</div>
+                            <div class="invalid-feedback">Please enter an age between 18 and 120.</div>
                         </div>
 
                         <div class="mb-3">
@@ -156,6 +185,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select personal status and sex.</div>
                         </div>
 
                         <div class="mb-3">
@@ -165,6 +195,7 @@
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                             </select>
+                            <div class="invalid-feedback">Please select number of dependents.</div>
                         </div>
 
                         <div class="mb-3">
@@ -175,6 +206,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select telephone status.</div>
                         </div>
 
                         <div class="mb-3">
@@ -185,6 +217,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select foreign worker status.</div>
                         </div>
                     </div>
                 </div>
@@ -204,6 +237,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select employment duration.</div>
                         </div>
 
                         <div class="mb-3">
@@ -214,6 +248,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select job type.</div>
                         </div>
 
                         <div class="mb-3">
@@ -224,6 +259,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select property type.</div>
                         </div>
 
                         <div class="mb-3">
@@ -234,6 +270,7 @@
                                 <option value="{{ val }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select housing status.</div>
                         </div>
 
                         <div class="mb-3">
@@ -245,6 +282,7 @@
                                 <option value="3">3</option>
                                 <option value="4">4</option>
                             </select>
+                            <div class="invalid-feedback">Please select residence duration.</div>
                         </div>
                     </div>
                 </div>
@@ -256,7 +294,7 @@
                 <button type="submit" class="btn btn-glow btn-lg px-5" id="submitBtn">
                     <i class="bi bi-lightning-charge me-2"></i>Classify Risk
                 </button>
-                <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3" onclick="document.getElementById('validationAlert').classList.add('d-none'); form.classList.remove('was-validated');">
                     <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
                 </button>
             </div>
