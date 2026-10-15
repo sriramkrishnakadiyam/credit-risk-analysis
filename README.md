@@ -168,6 +168,7 @@ Credit-Risk-Classification/
 ### Step-by-step (Windows PowerShell)
 
 ```powershell
+http://192.168.60.239:5000
 # 1. Open PowerShell and go to the project folder
 cd "C:\Users\acer\OneDrive\Desktop\Credit Risk Classification"
 
