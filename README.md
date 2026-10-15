@@ -168,7 +168,6 @@ Credit-Risk-Classification/
 ### Step-by-step (Windows PowerShell)
 
 ```powershell
-http://192.168.60.239:5000
 # 1. Open PowerShell and go to the project folder
 cd "C:\Users\acer\OneDrive\Desktop\Credit Risk Classification"
 
@@ -236,7 +235,7 @@ python train_model.py
 python app.py
 ```
 
-Open **http://127.0.0.1:5000** in your browser. Keep the PowerShell window open while using the site; press **Ctrl+C** there to stop the server.
+Open **http://192.168.60.239:5000** in your browser. Keep the PowerShell window open while using the site; press **Ctrl+C** there to stop the server.
 
 Flask prints a red warning that its built-in server is for development. This is expected when running `python app.py` locally; it is not an application error. The Render deployment uses Gunicorn as its production server, as configured in `render.yaml`.
 
