@@ -50,7 +50,7 @@ This project implements an end-to-end credit risk assessment system. Given a loa
 - Prevent data leakage by fitting the preprocessor on training data only
 - Provide an intuitive web interface for making predictions
 - Display model evaluation metrics on a performance dashboard
-- Implement three-level risk categorisation (Low / Medium / High) from binary classification
+- Implement three-level risk categorization (Low / Medium / High) from binary classification
 
 ---
 
@@ -103,7 +103,7 @@ The dataset is **automatically downloaded** during training. See [`data/README.m
 | Visualization | Matplotlib, Seaborn                          |
 | Backend     | Flask 3.0                                     |
 | Frontend    | HTML5, CSS3, JavaScript, Bootstrap 5.3        |
-| Serialisation | Joblib                                       |
+| Serialization | Joblib                                       |
 | Testing     | Pytest                                        |
 | Deployment  | Gunicorn, Render                              |
 
@@ -113,56 +113,46 @@ The dataset is **automatically downloaded** during training. See [`data/README.m
 
 ```
 Credit-Risk-Classification/
-│
-├── app.py                      # Flask application (routes, form handling)
-├── train_model.py              # Training script (download → clean → train → save)
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-├── .gitignore                  # Git ignore rules
-├── render.yaml                 # Render deployment config
-│
-├── data/
-│   ├── .gitkeep
-│   ├── README.md               # Dataset documentation
-│   └── german_credit.csv       # Downloaded at training time
-│
-├── models/
-│   ├── .gitkeep
-│   ├── logistic_regression_model.joblib  # Trained model
-│   ├── preprocessor.joblib              # Fitted ColumnTransformer
-│   └── metrics.joblib                   # Evaluation metrics dict
-│
-├── src/
-│   ├── __init__.py
-│   ├── config.py               # Paths, feature lists, thresholds
-│   ├── preprocessing.py        # Download, load, clean, build pipeline
-│   └── model_utils.py          # Train, evaluate, predict, classify
-│
-├── templates/
-│   ├── base.html               # Base template (navbar, footer)
-│   ├── index.html              # Home page
-│   ├── predict.html            # Prediction form
-│   ├── result.html             # Prediction result display
-│   ├── dashboard.html          # Model performance dashboard
-│   ├── about.html              # Project information
-│   ├── 404.html                # Custom 404 page
-│   └── 500.html                # Custom 500 page
-│
-├── static/
-│   ├── css/
-│   │   └── style.css           # Custom dark glassmorphism theme
-│   ├── js/
-│   │   └── script.js           # Form validation & UI enhancements
-│   └── images/
-│       └── .gitkeep
-│
-├── tests/
-│   ├── __init__.py
-│   ├── test_app.py             # Flask route tests
-│   └── test_model.py           # Model & prediction tests
-│
-└── screenshots/
-    └── .gitkeep
+|-- app.py
+|-- train_model.py
+|-- requirements.txt
+|-- README.md
+|-- .gitignore
+|-- render.yaml
+|-- data/
+|   |-- README.md
+|   `-- german_credit.csv
+|-- models/
+|   |-- logistic_regression_model.joblib
+|   |-- preprocessor.joblib
+|   `-- metrics.joblib
+|-- instance/
+|   `-- prediction_history.sqlite3  # Created when predictions are saved
+|-- src/
+|   |-- __init__.py
+|   |-- ai_chat.py
+|   |-- config.py
+|   |-- model_utils.py
+|   `-- preprocessing.py
+|-- templates/
+|   |-- 404.html
+|   |-- 500.html
+|   |-- about.html
+|   |-- base.html
+|   |-- chat.html
+|   |-- dashboard.html
+|   |-- history.html
+|   |-- index.html
+|   |-- predict.html
+|   `-- result.html
+|-- static/
+|   |-- css/style.css
+|   `-- js/script.js
+|-- tests/
+|   |-- __init__.py
+|   |-- test_app.py
+|   `-- test_model.py
+`-- screenshots/
 ```
 
 ---
@@ -178,14 +168,14 @@ Credit-Risk-Classification/
 ### Step-by-step (Windows PowerShell)
 
 ```powershell
-# 1. Clone or navigate to the project directory
-cd "Credit-Risk-Classification"
+# 1. Open PowerShell and go to the project folder
+cd "C:\Users\acer\OneDrive\Desktop\Credit Risk Classification"
 
 # 2. Create a virtual environment
 python -m venv venv
 
 # 3. Activate the virtual environment
-.\venv\Scripts\Activate
+.\venv\Scripts\Activate.ps1
 
 # 4. Install dependencies
 pip install -r requirements.txt
@@ -235,26 +225,44 @@ python train_model.py
 
 ---
 
-## 🚀 Running the Application
+## Running the Application
 
 ```powershell
-# Start the Flask development server
+# Activate the virtual environment if it is not already active
+.\venv\Scripts\Activate.ps1
+
+# Start the Flask application
 python app.py
 ```
 
-Open your browser and navigate to: **http://localhost:5000**
+Open **http://127.0.0.1:5000** in your browser. Keep the PowerShell window open while using the site; press **Ctrl+C** there to stop the server.
+
+Flask prints a red warning that its built-in server is for development. This is expected when running `python app.py` locally; it is not an application error. The Render deployment uses Gunicorn as its production server, as configured in `render.yaml`.
+
+### Using the website step by step
+
+1. **Home:** Review the project introduction and workflow. Select **Start Prediction** or **Predict** to open the form.
+2. **Enter application details:** Fill in the loan, financial, personal, employment, and property fields. All required fields must be completed.
+3. **Run a prediction:** Select **Classify Risk** at the bottom of the form. The result page displays the risk category and probability scores.
+4. **Open prediction history:** Choose **History** in the top navigation. Completed predictions are stored in `instance/prediction_history.sqlite3`; select **View** to reopen a result. Keep this database file to preserve local history.
+5. **Review model metrics:** Choose **Dashboard** to view accuracy, precision, recall, ROC AUC, the confusion matrix, and the classification report.
+6. **Read project details:** Choose **About** for the dataset, methodology, project structure, limitations, and technology stack.
+7. **Use the AI advisor:** Choose **AI Chat** to ask questions about credit-risk concepts and model results.
+
+The prediction form's **Reset** button clears the current form fields; it does not delete saved history.
 
 ### Available Pages
 
-| Route          | Description                                    |
-|----------------|------------------------------------------------|
-| `/`            | Home page                                      |
-| `/predict`     | Prediction form                                |
-| `/result`      | Prediction result (after submit)               |
-| `/dashboard`   | Model performance dashboard                    |
-| `/about`       | Project information                            |
-| `/chat`        | Dedicated AI Credit Advisor interactive chat   |
-| `/api/chat`    | REST API endpoint for chat messages (POST)     |
+| Route | Description |
+|---|---|
+| `/` | Home page |
+| `/predict` | Prediction form |
+| `/result` | Prediction result after submission |
+| `/history` | Saved predictions |
+| `/dashboard` | Model performance dashboard |
+| `/about` | Project information |
+| `/chat` | AI Credit Advisor chat |
+| `/api/chat` | REST API endpoint for chat messages (POST) |
 
 ---
 
@@ -360,15 +368,39 @@ The repository includes a ready-to-use [`render.yaml`](render.yaml) specificatio
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-> Place screenshots in the `screenshots/` directory after running the application.
+The screenshot images were supplied in chat, but are not yet available as files in this repository. Copy them into `screenshots/` using these names; the markdown links below will then render them.
 
-- Home Page (`screenshots/home.png`)
-- Prediction Form (`screenshots/predict_form.png`)
-- Prediction Result with Risk Gauge & Advisory (`screenshots/prediction_result.png`)
-- Model Analytics Dashboard with Confusion Matrix (`screenshots/dashboard.png`)
-- About Page with Methodology (`screenshots/about.png`)
+### Home page
+
+![CreditRiskAI home page](screenshots/home.png)
+
+### How it works
+
+![Home page workflow and model summary](screenshots/how-it-works.png)
+
+### Prediction form
+
+![Loan and financial details form](screenshots/predict-form-loan.png)
+
+![Personal and employment details form](screenshots/predict-form-personal.png)
+
+### Prediction history
+
+![Saved predictions in the History page](screenshots/history.png)
+
+### Model dashboard
+
+![Model performance dashboard](screenshots/dashboard.png)
+
+### About page
+
+![Project overview and methodology](screenshots/about.png)
+
+### AI Chat
+
+![CreditRiskAI advisor chat page](screenshots/ai-chat.png)
 
 ---
 

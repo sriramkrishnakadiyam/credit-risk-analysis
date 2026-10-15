@@ -14,10 +14,11 @@ from app import app
 
 
 @pytest.fixture
-def client():
+def client(tmp_path):
     """Flask test client."""
     app.config["TESTING"] = True
     app.config["WTF_CSRF_ENABLED"] = False
+    app.config["HISTORY_DATABASE"] = str(tmp_path / "prediction_history.sqlite3")
     with app.test_client() as client:
         yield client
 
@@ -143,3 +144,34 @@ def test_result_without_session(client):
     """Accessing result page without session data should redirect."""
     response = client.get("/result", follow_redirects=True)
     assert response.status_code == 200
+
+
+def test_prediction_history_is_saved_per_browser(client, monkeypatch):
+    """Completed predictions should be saved and isolated to their browser."""
+    def fake_predict(input_data):
+        assert input_data["credit_amount"] == 5000
+        return {
+            "risk_category": "Low Risk",
+            "probability_bad": 0.2,
+            "probability_good": 0.8,
+            "binary_prediction": "Good Credit",
+        }
+
+    monkeypatch.setattr("app.predict_single", fake_predict)
+
+    response = client.post("/predict", data=VALID_FORM_DATA)
+    assert response.status_code == 302
+
+    history_response = client.get("/history")
+    assert history_response.status_code == 200
+    assert b"Low Risk" in history_response.data
+    assert b"5000" in history_response.data
+
+    detail_response = client.get("/history/1")
+    assert detail_response.status_code == 200
+    assert b"Input Summary" in detail_response.data
+
+    other_browser = app.test_client()
+    other_history = other_browser.get("/history")
+    assert b"No predictions yet" in other_history.data
+    assert other_browser.get("/history/1").status_code == 404

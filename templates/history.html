@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Prediction History{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge rounded-pill bg-info bg-opacity-25 text-info mb-3 px-3 py-2">
+                <i class="bi bi-clock-history me-1"></i> Saved Predictions
+            </span>
+            <h1 class="fw-bold">Prediction History</h1>
+            <p class="text-secondary">Your completed predictions are saved and listed here.</p>
+        </div>
+
+        {% if predictions %}
+        <div class="glass-card p-3 p-md-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Credit Amount</th>
+                            <th scope="col">Duration</th>
+                            <th scope="col">Risk Category</th>
+                            <th scope="col">Bad Credit Probability</th>
+                            <th scope="col"><span class="visually-hidden">Details</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prediction in predictions %}
+                        <tr>
+                            <td>{{ prediction.created_at }}</td>
+                            <td>{{ prediction.input_data.get('credit_amount', '—') }}</td>
+                            <td>{{ prediction.input_data.get('duration_months', '—') }} months</td>
+                            <td>
+                                {% if prediction.result.risk_category == 'Low Risk' %}
+                                    {% set badge_color = 'success' %}
+                                {% elif prediction.result.risk_category == 'Medium Risk' %}
+                                    {% set badge_color = 'warning' %}
+                                {% else %}
+                                    {% set badge_color = 'danger' %}
+                                {% endif %}
+                                <span class="badge bg-{{ badge_color }}">
+                                    {{ prediction.result.risk_category }}
+                                </span>
+                            </td>
+                            <td>{{ (prediction.result.probability_bad * 100) | round(1) }}%</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-info"
+                                   href="{{ url_for('history_detail', prediction_id=prediction.id) }}">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="glass-card p-5 text-center">
+            <i class="bi bi-clock-history display-4 text-secondary"></i>
+            <h2 class="h4 mt-3">No predictions yet</h2>
+            <p class="text-secondary">Your completed credit-risk predictions will appear here.</p>
+            <a href="{{ url_for('predict') }}" class="btn btn-glow">
+                <i class="bi bi-calculator me-2"></i>Make a Prediction
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

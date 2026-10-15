@@ -11,6 +11,10 @@ Routes:
 
 import sys
 import os
+import json
+import secrets
+import sqlite3
+from datetime import datetime
 
 # Ensure the project root is on sys.path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -36,6 +40,9 @@ app = Flask(
     static_folder=STATIC_DIR,
 )
 app.secret_key = SECRET_KEY
+app.config["HISTORY_DATABASE"] = os.path.join(
+    app.instance_path, "prediction_history.sqlite3"
+)
 
 # ── Dropdown options for the prediction form ────────────────────────────────
 # These mirror the raw German Credit encoding values.
@@ -126,6 +133,94 @@ FORM_OPTIONS = {
 }
 
 
+def _save_prediction_history(browser_id, input_data, result):
+    """Persist a prediction for the current browser."""
+    database_path = app.config["HISTORY_DATABASE"]
+    os.makedirs(os.path.dirname(database_path), exist_ok=True)
+    connection = sqlite3.connect(database_path)
+    try:
+        with connection:
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS prediction_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    browser_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    input_data TEXT NOT NULL,
+                    result TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_prediction_history_browser
+                ON prediction_history (browser_id, id DESC)
+                """
+            )
+            connection.execute(
+                """
+                INSERT INTO prediction_history
+                    (browser_id, created_at, input_data, result)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    browser_id,
+                    datetime.now().astimezone().replace(microsecond=0).isoformat(),
+                    json.dumps(input_data),
+                    json.dumps(result),
+                ),
+            )
+    finally:
+        connection.close()
+
+
+def _get_browser_prediction_history():
+    """Load saved predictions, newest first.
+
+    History is intentionally available from the shared history database even
+    when the browser identifier cookie is missing or was cleared. This keeps
+    records visible on the History page after browser data resets.
+    """
+    browser_id = request.cookies.get("prediction_history_id")
+    database_path = app.config["HISTORY_DATABASE"]
+    if not os.path.exists(database_path):
+        return []
+
+    connection = sqlite3.connect(database_path)
+    connection.row_factory = sqlite3.Row
+    try:
+        if browser_id:
+            rows = connection.execute(
+                """
+                SELECT id, created_at, input_data, result
+                FROM prediction_history
+                WHERE browser_id = ?
+                ORDER BY id DESC
+                """,
+                (browser_id,),
+            ).fetchall()
+        else:
+            rows = connection.execute(
+                """
+                SELECT id, created_at, input_data, result
+                FROM prediction_history
+                ORDER BY id DESC
+                """
+            ).fetchall()
+    finally:
+        connection.close()
+
+    return [
+        {
+            "id": row["id"],
+            "created_at": row["created_at"],
+            "input_data": json.loads(row["input_data"]),
+            "result": json.loads(row["result"]),
+        }
+        for row in rows
+    ]
+
+
 # ── Routes ──────────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -177,8 +272,23 @@ def predict():
         # Store result in session for the result page
         session["prediction_result"] = result
         session["input_data"] = {k: str(v) for k, v in input_data.items()}
+        history_browser_id = (
+            request.cookies.get("prediction_history_id") or secrets.token_urlsafe(32)
+        )
+        _save_prediction_history(history_browser_id, session["input_data"], result)
 
-        return redirect(url_for("result"))
+        response = redirect(url_for("result"))
+        response.set_cookie(
+            "prediction_history_id",
+            history_browser_id,
+            # Keep the browser identifier across restarts and deployments.
+            # Without an expiry, this is a persistent browser cookie; the
+            # prediction rows themselves live in the SQLite database.
+            httponly=True,
+            secure=request.is_secure,
+            samesite="Lax",
+        )
+        return response
 
     except FileNotFoundError as e:
         flash(str(e), "danger")
@@ -200,6 +310,59 @@ def result():
         "result.html",
         result=prediction_result,
         input_data=input_data,
+        form_options=FORM_OPTIONS,
+    )
+
+
+@app.route("/history")
+def history():
+    """Display this browser's saved prediction history."""
+    return render_template(
+        "history.html",
+        predictions=_get_browser_prediction_history(),
+        form_options=FORM_OPTIONS,
+    )
+
+
+@app.route("/history/<int:prediction_id>")
+def history_detail(prediction_id):
+    """Display a saved prediction from the history database."""
+    browser_id = request.cookies.get("prediction_history_id")
+    database_path = app.config["HISTORY_DATABASE"]
+    if not os.path.exists(database_path):
+        return render_template("404.html"), 404
+
+    connection = sqlite3.connect(database_path)
+    connection.row_factory = sqlite3.Row
+    try:
+        if browser_id:
+            prediction = connection.execute(
+                """
+                SELECT input_data, result
+                FROM prediction_history
+                WHERE id = ? AND browser_id = ?
+                """,
+                (prediction_id, browser_id),
+            ).fetchone()
+        else:
+            prediction = connection.execute(
+                """
+                SELECT input_data, result
+                FROM prediction_history
+                WHERE id = ?
+                """,
+                (prediction_id,),
+            ).fetchone()
+    finally:
+        connection.close()
+
+    if prediction is None:
+        return render_template("404.html"), 404
+
+    return render_template(
+        "result.html",
+        result=json.loads(prediction["result"]),
+        input_data=json.loads(prediction["input_data"]),
         form_options=FORM_OPTIONS,
     )
 

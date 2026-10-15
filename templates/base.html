@@ -50,6 +50,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ('history', 'history_detail') %}active{% endif %}"
+                           href="{{ url_for('history') }}">
+                            <i class="bi bi-clock-history me-1"></i>History
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"
                            href="{{ url_for('dashboard') }}">
                             <i class="bi bi-graph-up me-1"></i>Dashboard

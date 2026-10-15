@@ -25,6 +25,7 @@ Thumbs.db
 
 # Dataset (downloaded at training time)
 data/german_credit.csv
+instance/prediction_history.sqlite3
 
 # Distribution / packaging
 dist/
@@ -42,3 +43,4 @@ htmlcov/
 # Secrets / env
 .env
 *.env
+.pytest-local-tmp/
